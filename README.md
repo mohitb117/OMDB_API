@@ -1,5 +1,4 @@
 HOW TO BUILD APK for Demo App:
-  -- By Mohit Bhalla
 
 1. Use Android Studio:
    I used Android Studio Config: 
