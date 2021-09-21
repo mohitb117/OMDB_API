@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mohitb117.demo_omdb_api.datamodels.SearchResultsBody
 import com.mohitb117.demo_omdb_api.repositories.MovieRepository
+import com.slack.eithernet.ApiResult
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
@@ -38,12 +39,16 @@ class SearchViewModel
         }
 
         viewModelScope.launch(Dispatchers.IO + exceptionHandler) {
-            val result = repository.loadResults(searchTerm)
+            when(val result = repository.loadResults(searchTerm)) {
+                is ApiResult.Success -> _viewState.postValue(SearchViewState(searchTerm, result.value))
 
-            when {
-                result.isSuccessful -> _viewState.postValue(SearchViewState(searchTerm, result.body()!!))
-
-                else -> _viewState.postValue(SearchViewState(searchTerm, null, result.errorBody().toString()))
+                is ApiResult.Failure -> when(result) {
+                    is ApiResult.Failure.ApiFailure -> _viewState.postValue(SearchViewState(searchTerm, null, result.error.toString()))
+                    is ApiResult.Failure.HttpFailure -> _viewState.postValue(SearchViewState(searchTerm, null, result.error.toString()))
+                    is ApiResult.Failure.NetworkFailure -> _viewState.postValue(SearchViewState(searchTerm, null, result.error.toString()))
+                    is ApiResult.Failure.UnknownFailure -> _viewState.postValue(SearchViewState(searchTerm, null, result.error.toString()))
+                    else -> _viewState.postValue(SearchViewState(searchTerm, null, "Not sure what is going on!!! :sob: "))
+                }
             }
         }
     }

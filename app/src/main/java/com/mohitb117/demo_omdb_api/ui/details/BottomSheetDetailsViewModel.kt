@@ -8,6 +8,8 @@ import androidx.lifecycle.viewModelScope
 import com.mohitb117.demo_omdb_api.datamodels.DetailsResultsBody
 import com.mohitb117.demo_omdb_api.datamodels.SearchResult
 import com.mohitb117.demo_omdb_api.repositories.MovieRepository
+import com.mohitb117.demo_omdb_api.ui.search.SearchViewState
+import com.slack.eithernet.ApiResult
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
@@ -39,12 +41,17 @@ class BottomSheetDetailsViewModel
         }
 
         viewModelScope.launch(Dispatchers.IO + exceptionHandler) {
-            val result = repository.loadDetails(imdbId)
 
-            when {
-                result.isSuccessful -> _viewState.postValue(DetailsViewState(imdbId, result.body()!!))
+            when(val result = repository.loadDetails(imdbId)) {
+                is ApiResult.Success -> _viewState.postValue(DetailsViewState(imdbId, result.value))
 
-                else -> _viewState.postValue(DetailsViewState(imdbId, null, result.errorBody().toString()))
+                is ApiResult.Failure -> when(result) {
+                    is ApiResult.Failure.ApiFailure -> _viewState.postValue(DetailsViewState(imdbId, null, result.error.toString()))
+                    is ApiResult.Failure.HttpFailure -> _viewState.postValue(DetailsViewState(imdbId, null, result.error.toString()))
+                    is ApiResult.Failure.NetworkFailure -> _viewState.postValue(DetailsViewState(imdbId, null, result.error.toString()))
+                    is ApiResult.Failure.UnknownFailure -> _viewState.postValue(DetailsViewState(imdbId, null, result.error.toString()))
+                    else -> _viewState.postValue(DetailsViewState(imdbId, null, "Not sure what is going on!!! :sob: "))
+                }
             }
         }
     }

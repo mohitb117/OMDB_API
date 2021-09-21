@@ -13,7 +13,7 @@ import kotlinx.parcelize.Parcelize
 @Entity(tableName = PERSISTED_MOVIE_TABLE_NAME)
 @Parcelize
 data class SearchResult(
-    @PrimaryKey @SerializedName("imdbID") val imdbID: String,
+    @PrimaryKey val imdbID: String,
     @SerializedName("Title") val title: String,
     @SerializedName("Type") val type: String,
     @SerializedName("Poster") val poster: String
@@ -21,10 +21,12 @@ data class SearchResult(
 
 @Parcelize
 data class SearchResultsBody(
-    @SerializedName("Search") val result: List<SearchResult>? = null,
+    val Search: List<SearchResult>? = null,
     val totalResults: String,
     val Response: String
-) : Parcelable
+) : Parcelable {
+    val result = Search
+}
 
 const val PERSISTED_MOVIE_TABLE_NAME = "persisted_movie_table"
 

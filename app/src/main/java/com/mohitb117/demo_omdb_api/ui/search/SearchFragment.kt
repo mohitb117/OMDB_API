@@ -2,6 +2,7 @@ package com.mohitb117.demo_omdb_api.ui.search
 
 import android.annotation.SuppressLint
 import android.os.Bundle
+import android.util.Log
 import android.view.*
 import android.view.inputmethod.EditorInfo
 import androidx.fragment.app.Fragment
@@ -111,6 +112,7 @@ class SearchFragment : Fragment() {
                 text = " Error Received: $it"
                 setTextColor(resources.getColor(android.R.color.holo_red_dark, context.theme))
             }
+            Log.e(TAG, "Error Received $it")
         }
 
         viewState?.searchResult?.let {
@@ -134,5 +136,9 @@ class SearchFragment : Fragment() {
                 adapter.submitList(it.result)
             }
         }
+    }
+
+    private companion object {
+        private val TAG = SearchFragment::class.java.simpleName
     }
 }

@@ -5,6 +5,7 @@ import com.mohitb117.demo_omdb_api.datamodels.DetailsResultsBody
 import com.mohitb117.demo_omdb_api.datamodels.SearchResult
 import com.mohitb117.demo_omdb_api.datamodels.SearchResultsBody
 import com.mohitb117.demo_omdb_api.endpoints.OMDBApi
+import com.slack.eithernet.ApiResult
 import retrofit2.Response
 import javax.inject.Inject
 
@@ -28,13 +29,11 @@ class MovieRepository
         favouritesDao.delete(imdbId)
     }
 
-    suspend fun loadResults(term: String): Response<SearchResultsBody> {
-        return endpoint.loadResults(API_KEY, term)
-    }
+    suspend fun loadResults(term: String) =
+        endpoint.loadResults(API_KEY, term)
 
-    suspend fun loadDetails(imdbId: String): Response<DetailsResultsBody> {
-        return endpoint.loadDetails(API_KEY, imdbId)
-    }
+    suspend fun loadDetails(imdbId: String) =
+        endpoint.loadDetails(API_KEY, imdbId)
 
     companion object {
         private const val API_KEY = "4f99d5d"

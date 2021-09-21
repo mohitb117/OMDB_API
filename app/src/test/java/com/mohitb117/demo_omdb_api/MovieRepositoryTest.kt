@@ -5,6 +5,7 @@ import com.mohitb117.demo_omdb_api.datamodels.SearchResult
 import com.mohitb117.demo_omdb_api.datamodels.SearchResultsBody
 import com.mohitb117.demo_omdb_api.endpoints.OMDBApi
 import com.mohitb117.demo_omdb_api.repositories.MovieRepository
+import com.slack.eithernet.ApiResult
 import kotlinx.coroutines.runBlocking
 import okhttp3.ResponseBody
 import okhttp3.ResponseBody.Companion.toResponseBody
@@ -43,7 +44,7 @@ class MovieRepositoryTest {
     @Test
     fun dummyApiWithSuccess() = runBlocking {
         // Arrange
-        val successfulResult = Response.success(200, SearchResultsBody(emptyList(), "12", "False"))
+        val successfulResult = ApiResult.success(SearchResultsBody(emptyList(), "12", "False"))
         whenever(mockApi.loadResults(anyString(), anyString())).thenReturn(successfulResult)
 
         val repository = MovieRepository(mockApi, mockFavDao)
@@ -52,8 +53,8 @@ class MovieRepositoryTest {
         val result = repository.loadResults("12345")
 
         // Assert.
-        assertTrue(result.isSuccessful)
-        assertEquals(successfulResult.body(), result.body())
+        assertTrue(result is ApiResult.Success)
+        assertEquals(successfulResult.value, (result is ApiResult.Success).value)
     }
 
     @Test
