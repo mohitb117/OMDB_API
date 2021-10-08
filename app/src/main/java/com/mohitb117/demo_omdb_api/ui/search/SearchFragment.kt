@@ -116,7 +116,7 @@ class SearchFragment : Fragment() {
         }
 
         viewState?.searchResult?.let {
-            val hasResults = it.result?.isNotEmpty() ?: false
+            val hasResults = it.Search?.isNotEmpty() ?: false
 
             viewBinding.apply {
                 emptyView.isInvisible = hasResults
@@ -125,7 +125,7 @@ class SearchFragment : Fragment() {
                 resultsSummary.apply {
                     text = """
                         Result summary for ${viewState.searchTerm} returned: ${it.totalResults}  
-                        but page #1 loaded ${it.result?.size} results
+                        but page #1 loaded ${it.Search?.size} results
                     """.trimIndent()
 
                     setTextColor(resources.getColor(android.R.color.holo_green_light, context.theme))
@@ -133,7 +133,7 @@ class SearchFragment : Fragment() {
             }
 
             if (hasResults) {
-                adapter.submitList(it.result)
+                adapter.submitList(it.Search)
             }
         }
     }

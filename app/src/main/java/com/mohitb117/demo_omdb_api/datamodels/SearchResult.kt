@@ -24,9 +24,7 @@ data class SearchResultsBody(
     val Search: List<SearchResult>? = null,
     val totalResults: String,
     val Response: String
-) : Parcelable {
-    val result = Search
-}
+) : Parcelable
 
 const val PERSISTED_MOVIE_TABLE_NAME = "persisted_movie_table"
 

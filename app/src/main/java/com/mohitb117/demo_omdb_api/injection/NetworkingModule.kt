@@ -1,6 +1,7 @@
 package com.mohitb117.demo_omdb_api.injection
 
 import com.google.gson.GsonBuilder
+import com.mohitb117.demo_omdb_api.OmdbApiApp
 import com.mohitb117.demo_omdb_api.endpoints.OMDBApi
 import com.slack.eithernet.ApiResultCallAdapterFactory
 import com.slack.eithernet.ApiResultConverterFactory
@@ -14,6 +15,7 @@ import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import retrofit2.create
 
 @Module
 @InstallIn(
@@ -38,16 +40,15 @@ class NetworkingModule {
         return Retrofit.Builder()
             .baseUrl(OMDB_BASE_URL)
             .client(client)
-            .addConverterFactory(GsonConverterFactory.create(gson))
             .addConverterFactory(ApiResultConverterFactory)
             .addCallAdapterFactory(ApiResultCallAdapterFactory)
+            .addConverterFactory(GsonConverterFactory.create())
             .build()
     }
 
     @Provides
-    fun provideOmdbApiEndpoints(retrofit: Retrofit): OMDBApi {
-        return retrofit.create(OMDBApi::class.java)
-    }
+    fun provideOmdbApiEndpoints(retrofit: Retrofit): OMDBApi =
+        retrofit.create()
 
     companion object {
         const val OMDB_BASE_URL = "https://www.omdbapi.com/"

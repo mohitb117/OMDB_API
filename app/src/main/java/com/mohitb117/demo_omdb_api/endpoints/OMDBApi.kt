@@ -9,16 +9,15 @@ import retrofit2.http.GET
 import retrofit2.http.Query
 
 interface OMDBApi {
-
     @GET(OMDB_BASE_URL)
     suspend fun loadResults(
         @Query("apikey") key: String,
         @Query("s") term: String
-    ): ApiResult<SearchResultsBody, Nothing>
+    ): ApiResult<SearchResultsBody, String>
 
     @GET(OMDB_BASE_URL)
     suspend fun loadDetails(
         @Query("apikey") key: String,
         @Query("i") imdbId: String
-    ): ApiResult<DetailsResultsBody, Nothing>
+    ): ApiResult<DetailsResultsBody, String>
 }
