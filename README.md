@@ -1,6 +1,6 @@
 Project Status
 
-![Android Workflow](https://github.com/mohitb117/OMDB_API/actions/workflows/android/badge.svg)
+![Android Workflow](https://github.com/mohitb117/OMDB_API/actions/workflows/android.yml/badge.svg)
 
 -----
 
