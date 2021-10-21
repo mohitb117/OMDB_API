@@ -54,13 +54,14 @@ class MovieRepositoryTest {
 
         // Assert.
         assertTrue(result is ApiResult.Success)
-        assertEquals(successfulResult.value, (result is ApiResult.Success).value)
+        assertEquals(successfulResult.value, (result as ApiResult.Success).value)
     }
 
     @Test
     fun dummyApiWithError() = runBlocking {
         // Arrange
-        val errorResponse = Response.error<SearchResultsBody>(404, "null".toResponseBody())
+        val error = "error"
+        val errorResponse = ApiResult.httpFailure(404, error)
         whenever(mockApi.loadResults(anyString(), anyString())).thenReturn(errorResponse)
 
         val repository = MovieRepository(mockApi, mockFavDao)
@@ -69,8 +70,9 @@ class MovieRepositoryTest {
         val result = repository.loadResults("12345")
 
         // Assert.
-        assertFalse(result.isSuccessful)
-        assertNull(result.body())
+        assertTrue(result is ApiResult.Failure)
+        assertEquals(404, (result as ApiResult.Failure.HttpFailure).code)
+        assertEquals(error, result.error)
     }
 
     @Test
