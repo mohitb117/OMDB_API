@@ -1,3 +1,9 @@
+Project Status
+
+![Android Workflow](https://github.com/mohitb117/OMDB_API/actions/workflows/android/badge.svg)
+
+-----
+
 HOW TO BUILD APK for Demo App
 
 1. Use Android Studio:
