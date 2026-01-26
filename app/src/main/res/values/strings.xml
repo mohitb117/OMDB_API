@@ -3,4 +3,8 @@
     <string name="title_activity_launching">OMDB Test</string>
     <string name="title_search_home">Search</string>
     <string name="title_favourites">Favourites</string>
+    <string name="home">Home</string>
+    <string name="favorites">Favorites</string>
+    <string name="shopping">Shopping</string>
+    <string name="profile">Profile</string>
 </resources>
