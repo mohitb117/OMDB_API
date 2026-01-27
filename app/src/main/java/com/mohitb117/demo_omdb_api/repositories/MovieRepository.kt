@@ -35,6 +35,16 @@ class MovieRepository
     suspend fun loadDetails(imdbId: String) =
         endpoint.loadDetails(API_KEY, imdbId)
 
+    suspend fun toggleFavourite(result: SearchResult): Boolean {
+        val currentState = isFavourite(result.imdbID)
+        when {
+            currentState -> delete(result.imdbID)
+            else -> insert(result)
+        }
+
+        return !currentState
+    }
+
     companion object {
         private const val API_KEY = "4f99d5d"
     }

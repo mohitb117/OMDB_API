@@ -39,8 +39,9 @@ class FavouritesFragment : Fragment() {
 
     private val searchCallbacks = object : Callbacks {
         override fun gotoDetails(imdbId: String, position: Int) {
-            (activity as LaunchingActivity).gotoDetails(imdbId)
-            lastSelectedPosition = position
+// TODO:
+//            (activity as LaunchingActivity).gotoDetails(imdbId)
+//            lastSelectedPosition = position
         }
     }
 
