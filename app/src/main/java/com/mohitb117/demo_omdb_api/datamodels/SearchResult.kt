@@ -21,7 +21,7 @@ data class SearchResult(
 
 @Parcelize
 data class SearchResultsBody(
-    val Search: List<SearchResult>? = null,
+    val Search: List<SearchResult>? = emptyList(),
     val totalResults: String,
     val Response: String
 ) : Parcelable

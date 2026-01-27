@@ -70,6 +70,7 @@ dependencies {
     implementation 'androidx.compose.material3.adaptive:adaptive-layout'
     implementation 'androidx.compose.material3.adaptive:adaptive-navigation'
 
+
     // Jetpack Compose BOM
     implementation platform("androidx.compose:compose-bom:$compose_bom_version")
     implementation "androidx.compose.ui:ui"
@@ -78,6 +79,9 @@ dependencies {
     implementation "androidx.compose.material3:material3"
     implementation "androidx.compose.material:material-icons-extended"
     implementation "androidx.compose.runtime:runtime-livedata"
+    implementation "androidx.lifecycle:lifecycle-viewmodel-compose"
+    implementation 'androidx.compose.runtime:runtime-livedata'
+
     debugImplementation "androidx.compose.ui:ui-tooling"
     debugImplementation "androidx.compose.ui:ui-test-manifest"
 

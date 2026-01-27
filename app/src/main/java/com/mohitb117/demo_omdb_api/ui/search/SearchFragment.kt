@@ -41,8 +41,9 @@ class SearchFragment : Fragment() {
 
     private val searchCallbacks = object : Callbacks {
         override fun gotoDetails(imdbId: String, position: Int) {
-            (activity as LaunchingActivity).gotoDetails(imdbId)
-            lastSelectedPosition = position
+// TODO:
+//            (activity as LaunchingActivity).gotoDetails(imdbId)
+//            lastSelectedPosition = position
         }
     }
 
@@ -86,9 +87,9 @@ class SearchFragment : Fragment() {
             searchTermEdittext.setOnEditorActionListener(nextListener)
         }
 
-        // Listen for Search Result Update.
-        searchViewModel.viewState
-            .observe(viewLifecycleOwner) { viewState -> handleSearchViewState(viewState) }
+//        // Listen for Search Result Update.
+//        searchViewModel.viewState
+//            .observe(viewLifecycleOwner) { viewState -> handleSearchViewState(viewState) }
 
         // Listen for State Update for items being marked as "fav" and selectively update the item.
         searchViewModel.getFavItems()
