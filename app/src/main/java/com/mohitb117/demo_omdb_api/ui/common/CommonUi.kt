@@ -60,7 +60,6 @@ fun MovieItemListComposable(
         ) {
             items(
                 items = searchItems,
-                key = { item -> item.imdbID }
             ) { item ->
                 Row(
                     modifier = Modifier.fillMaxWidth(),
