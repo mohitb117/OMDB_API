@@ -8,7 +8,6 @@ import androidx.lifecycle.viewModelScope
 import com.mohitb117.demo_omdb_api.datamodels.DetailsResultsBody
 import com.mohitb117.demo_omdb_api.datamodels.SearchResult
 import com.mohitb117.demo_omdb_api.repositories.MovieRepository
-import com.mohitb117.demo_omdb_api.ui.search.SearchViewState
 import com.slack.eithernet.ApiResult
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineExceptionHandler
