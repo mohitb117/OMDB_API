@@ -3,7 +3,6 @@ package com.mohitb117.demo_omdb_api.ui.common
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -12,6 +11,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -33,10 +33,10 @@ import com.mohitb117.demo_omdb_api.R
 import com.mohitb117.demo_omdb_api.activities.ui.theme.DEMO_OMDB_APITheme
 import com.mohitb117.demo_omdb_api.datamodels.SearchResult
 import com.mohitb117.demo_omdb_api.datamodels.SearchResultsBody
-import com.mohitb117.demo_omdb_api.ui.search.FavouritesComposableContent
+import com.mohitb117.demo_omdb_api.ui.favourites.FavouritesComposableContent
 import kotlinx.coroutines.launch
-import kotlin.collections.orEmpty
 
+@ExperimentalMaterial3Api
 @Composable
 fun MovieItemListComposable(
     modifier: Modifier,
@@ -48,18 +48,14 @@ fun MovieItemListComposable(
     val coroutineScope = rememberCoroutineScope()
 
     if (searchItems.isEmpty()) {
-        Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(modifier = Modifier.fillMaxWidth(), text = "No results found")
-        }
+        Text(modifier = Modifier.fillMaxWidth(), text = "No results found")
     } else {
         LazyColumn(
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxSize(),
         ) {
             items(
                 items = searchItems,
+                key = { it.imdbID }
             ) { item ->
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -109,6 +105,14 @@ fun MovieItemListComposable(
     }
 }
 
+@Composable
+fun ListItem(
+    modifier: Modifier = Modifier
+) {
+
+}
+
+@ExperimentalMaterial3Api
 @Preview(showBackground = true)
 @Composable
 fun MovieItemComposablePreview() {
@@ -132,6 +136,7 @@ fun MovieItemComposablePreview() {
     }
 }
 
+@ExperimentalMaterial3Api
 @Preview(showBackground = true)
 @Composable
 fun MovieItemListComposablePreview() {
