@@ -36,6 +36,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.mohitb117.demo_omdb_api.activities.ui.theme.DEMO_OMDB_APITheme
+import com.mohitb117.demo_omdb_api.activities.ui.theme.Purple80
 import com.mohitb117.demo_omdb_api.datamodels.SearchResult
 import com.mohitb117.demo_omdb_api.datamodels.SearchResultsBody
 import com.mohitb117.demo_omdb_api.ui.favourites.FavouritesViewModel
@@ -131,7 +132,7 @@ class LaunchingActivity : ComponentActivity() {
                         OutlinedTextField(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .background(color = Color.Gray),
+                                .background(color = Purple80),
                             value = searchQuery,
                             onValueChange = { onSearchQueryChanged(it) },
                             label = { Text(text = "Search Movie!") })
