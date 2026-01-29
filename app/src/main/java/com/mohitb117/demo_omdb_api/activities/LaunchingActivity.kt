@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalMaterial3Api::class)
+
 package com.mohitb117.demo_omdb_api.activities
 
 import android.os.Bundle
@@ -7,18 +9,22 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffold
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -26,18 +32,19 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.mohitb117.demo_omdb_api.activities.ui.theme.DEMO_OMDB_APITheme
+import com.mohitb117.demo_omdb_api.activities.ui.theme.Purple80
 import com.mohitb117.demo_omdb_api.datamodels.SearchResult
 import com.mohitb117.demo_omdb_api.datamodels.SearchResultsBody
 import com.mohitb117.demo_omdb_api.ui.favourites.FavouritesViewModel
-import com.mohitb117.demo_omdb_api.ui.search.FavouritesComposableContent
+import com.mohitb117.demo_omdb_api.ui.favourites.FavouritesComposableContent
 import com.mohitb117.demo_omdb_api.ui.search.Result
 import com.mohitb117.demo_omdb_api.ui.search.SearchComposableContent
 import com.mohitb117.demo_omdb_api.ui.search.SearchViewModel
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.delay
 
 @AndroidEntryPoint
 class LaunchingActivity : ComponentActivity() {
@@ -62,13 +69,18 @@ class LaunchingActivity : ComponentActivity() {
     ) {
         val searchUiState by searchViewModel.searchResultsViewState.collectAsStateWithLifecycle()
         val favouritesUiState by favouritesViewModel.favouritedIdsFlow.collectAsStateWithLifecycle()
+        val searchQuery by searchViewModel.searchQuery.collectAsStateWithLifecycle()
+        val isRefreshing by searchViewModel.isRefreshing.collectAsStateWithLifecycle()
 
         LaunchComposableContent(
             modifier = modifier,
             searchUiState = searchUiState,
             favouritesUiState = favouritesUiState,
-            onSearch = { searchViewModel.loadSearchResult(it) },
-            isMovieFavourited = { searchViewModel.favouritedIds.value.contains(it) },
+            searchQuery = searchQuery,
+            onRefresh = { searchViewModel.refresh() },
+            isRefreshing = isRefreshing,
+            onSearchQueryChanged = { searchViewModel.onSearchQueryChanged(it) },
+            isMovieFavourited = { searchViewModel.favouritedIds.value.any { fav -> fav.imdbID == it.imdbID } },
             onToggleMovieFavorited = { searchViewModel.toggleFavourite(it) },
         )
     }
@@ -78,7 +90,10 @@ class LaunchingActivity : ComponentActivity() {
         modifier: Modifier = Modifier,
         searchUiState: Result<SearchResultsBody>,
         favouritesUiState: Set<SearchResult>,
-        onSearch: (String) -> Unit,
+        searchQuery: String,
+        isRefreshing: Boolean = false,
+        onRefresh: () -> Unit = {},
+        onSearchQueryChanged: (String) -> Unit,
         isMovieFavourited: (SearchResult) -> Boolean = { false },
         onToggleMovieFavorited: suspend (SearchResult) -> Boolean = { false },
     ) {
@@ -97,33 +112,41 @@ class LaunchingActivity : ComponentActivity() {
                         onClick = { currentDestination = it },
                     )
                 }
-            }
-        ) {
-            var searchQuery by rememberSaveable { mutableStateOf("") }
+            }) {
+            val searchResultError = (searchUiState as? Result.Failure)?.error
 
             Scaffold(
                 modifier = Modifier.fillMaxSize(),
+                topBar = {
+                    Text(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .windowInsetsPadding(WindowInsets.statusBars)
+                            .padding(horizontal = 16.dp, vertical = 8.dp),
+                        text = searchResultError?.localizedMessage ?: stringResource(currentDestination.label),
+                        color = if (searchResultError != null) Color.Red else Color.Unspecified,
+                    )
+                },
                 bottomBar = {
                     if (currentDestination == AppDestinations.HOME) {
                         OutlinedTextField(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .background(color = Color.Gray),
+                                .background(color = Purple80),
                             value = searchQuery,
-                            onValueChange = { searchQuery = it },
-                            label = { Text(text = "Search Movie!") }
-                        )
+                            onValueChange = { onSearchQueryChanged(it) },
+                            label = { Text(text = "Search Movie!") })
                     }
                 }
             ) { innerPadding ->
                 when (currentDestination) {
                     AppDestinations.HOME -> {
                         SearchMovieInfoLayout(
-                            name = stringResource(currentDestination.label),
                             modifier = Modifier.padding(innerPadding),
                             searchQuery = searchQuery,
                             searchUiState = searchUiState,
-                            onSearch = onSearch,
+                            isRefreshing = isRefreshing,
+                            onRefresh = onRefresh,
                             isMovieFavourited = isMovieFavourited,
                             onToggleMovieFavorited = onToggleMovieFavorited,
                         )
@@ -131,7 +154,6 @@ class LaunchingActivity : ComponentActivity() {
 
                     else -> {
                         FavouritesComposableLayout(
-                            name = stringResource(currentDestination.label),
                             modifier = Modifier.padding(innerPadding),
                             uiState = favouritesUiState,
                             isMovieFavourited = isMovieFavourited,
@@ -145,11 +167,11 @@ class LaunchingActivity : ComponentActivity() {
 
     @Composable
     fun SearchMovieInfoLayout(
-        name: String,
         modifier: Modifier = Modifier,
         searchQuery: String = "",
         searchUiState: Result<SearchResultsBody>,
-        onSearch: (String) -> Unit,
+        isRefreshing: Boolean = false,
+        onRefresh: () -> Unit = {},
         isMovieFavourited: (SearchResult) -> Boolean = { false },
         onToggleMovieFavorited: suspend (SearchResult) -> Boolean = { false },
     ) {
@@ -160,17 +182,23 @@ class LaunchingActivity : ComponentActivity() {
         ) {
 
             if (searchQuery.isNotEmpty()) {
-                LaunchedEffect(searchQuery) {
-                    delay(500) // Debounce for 500ms
-                    onSearch(searchQuery)
+                val effectiveUiState = when {
+                    searchUiState is Result.Failure && searchUiState.lastCachedData != null -> {
+                        Result.Success(searchUiState.lastCachedData, searchQuery)
+                    }
+
+                    else -> searchUiState
                 }
 
                 SearchComposableContent(
                     modifier = Modifier,
-                    searchUiState = searchUiState,
+                    searchUiState = effectiveUiState,
+                    onRefresh = onRefresh,
+                    isRefreshing = isRefreshing,
                     onToggleMovieFavorited = onToggleMovieFavorited,
                     isMovieFavourited = isMovieFavourited,
                 )
+
             } else {
                 Text("Nothing to search right now!")
             }
@@ -179,7 +207,6 @@ class LaunchingActivity : ComponentActivity() {
 
     @Composable
     fun FavouritesComposableLayout(
-        name: String,
         uiState: Set<SearchResult>,
         modifier: Modifier = Modifier,
         isMovieFavourited: (SearchResult) -> Boolean = { false },
@@ -205,9 +232,7 @@ class LaunchingActivity : ComponentActivity() {
     fun SearchMovieInfoLayoutPreview() {
         DEMO_OMDB_APITheme {
             SearchMovieInfoLayout(
-                name = "Android",
-                searchUiState = Result.Loading(""),
-                onSearch = {}
+                searchUiState = Result.Loading("")
             )
         }
     }
@@ -219,7 +244,8 @@ class LaunchingActivity : ComponentActivity() {
             LaunchComposableContent(
                 searchUiState = Result.Loading(""),
                 favouritesUiState = emptySet(),
-                onSearch = {}
+                searchQuery = "",
+                onSearchQueryChanged = {}
             )
         }
     }

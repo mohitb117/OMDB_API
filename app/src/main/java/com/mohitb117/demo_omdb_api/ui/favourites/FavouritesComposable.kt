@@ -1,10 +1,12 @@
-package com.mohitb117.demo_omdb_api.ui.search
+package com.mohitb117.demo_omdb_api.ui.favourites
 
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.mohitb117.demo_omdb_api.datamodels.SearchResult
 import com.mohitb117.demo_omdb_api.datamodels.SearchResultsBody
 import com.mohitb117.demo_omdb_api.ui.common.MovieItemListComposable
+@ExperimentalMaterial3Api
 
 @Composable
 fun FavouritesComposableContent(
