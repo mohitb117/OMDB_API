@@ -5,6 +5,7 @@
     <string name="title_favourites">Favourites</string>
     <string name="home">Home</string>
     <string name="favorites">Favorites</string>
+    <string name="feed">Feed</string>
     <string name="shopping">Shopping</string>
     <string name="profile">Profile</string>
     <string name="title_activity_main">MainActivity</string>

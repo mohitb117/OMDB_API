@@ -41,6 +41,7 @@ import com.mohitb117.demo_omdb_api.datamodels.SearchResult
 import com.mohitb117.demo_omdb_api.datamodels.SearchResultsBody
 import com.mohitb117.demo_omdb_api.ui.favourites.FavouritesViewModel
 import com.mohitb117.demo_omdb_api.ui.favourites.FavouritesComposableContent
+import com.mohitb117.demo_omdb_api.ui.feed.FeedComposableContent
 import com.mohitb117.demo_omdb_api.ui.search.Result
 import com.mohitb117.demo_omdb_api.ui.search.SearchComposableContent
 import com.mohitb117.demo_omdb_api.ui.search.SearchViewModel
@@ -152,7 +153,16 @@ class LaunchingActivity : ComponentActivity() {
                         )
                     }
 
-                    else -> {
+                    AppDestinations.Feed -> {
+                        FeedComposableLayout(
+                            modifier = Modifier.padding(innerPadding),
+                            uiState = favouritesUiState,
+                            isMovieFavourited = isMovieFavourited,
+                            onToggleMovieFavorited = onToggleMovieFavorited,
+                        )
+                    }
+
+                    AppDestinations.FAVORITES -> {
                         FavouritesComposableLayout(
                             modifier = Modifier.padding(innerPadding),
                             uiState = favouritesUiState,
@@ -202,6 +212,28 @@ class LaunchingActivity : ComponentActivity() {
             } else {
                 Text("Nothing to search right now!")
             }
+        }
+    }
+
+    @Composable
+    fun FeedComposableLayout(
+        uiState: Set<SearchResult>,
+        modifier: Modifier = Modifier,
+        isMovieFavourited: (SearchResult) -> Boolean = { false },
+        onToggleMovieFavorited: suspend (SearchResult) -> Boolean = { false },
+    ) {
+        Column(
+            modifier = modifier.fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+
+            FeedComposableContent(
+                modifier = Modifier,
+                uiState = uiState,
+                onToggleMovieFavorited = onToggleMovieFavorited,
+                isMovieFavourited = isMovieFavourited,
+            )
         }
     }
 

@@ -60,7 +60,6 @@ fun MovieItemListComposable(
         ) {
             items(
                 items = searchItems,
-                key = { it.imdbID }
             ) { item ->
                 ListItem(
                     item = item,
