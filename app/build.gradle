@@ -5,6 +5,7 @@ plugins {
     id "org.jetbrains.kotlin.plugin.compose" version "$kotlin_version"
     id "dagger.hilt.android.plugin"
     id "kotlin-parcelize"
+    id 'org.jetbrains.kotlin.plugin.serialization' version '2.0.21'
 }
 
 android {
@@ -70,7 +71,6 @@ dependencies {
     implementation 'androidx.compose.material3.adaptive:adaptive-layout'
     implementation 'androidx.compose.material3.adaptive:adaptive-navigation'
 
-
     // Jetpack Compose BOM
     implementation platform("androidx.compose:compose-bom:$compose_bom_version")
     implementation "androidx.compose.ui:ui"
@@ -95,6 +95,14 @@ dependencies {
     implementation "androidx.navigation:navigation-fragment-ktx:$nav_version"
     implementation "androidx.navigation:navigation-ui-ktx:$nav_version"
     implementation "androidx.navigation:navigation-compose:$nav_version"
+    implementation("androidx.navigation:navigation-runtime-ktx:$nav_version") {
+        version {
+            // 'strictly' forces this version. No other version is allowed.
+            strictly nav_version
+        }
+        because("blah!")
+    }
+    implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3"
 
     // Dagger Hilt
     implementation "com.google.dagger:hilt-android:$hilt_version"

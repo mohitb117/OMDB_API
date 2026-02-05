@@ -3,6 +3,7 @@ package com.mohitb117.demo_omdb_api.ui.favourites
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import com.mohitb117.demo_omdb_api.activities.ItemDetailDestination
 import com.mohitb117.demo_omdb_api.datamodels.SearchResult
 import com.mohitb117.demo_omdb_api.datamodels.SearchResultsBody
 import com.mohitb117.demo_omdb_api.ui.common.MovieItemListComposable
@@ -14,6 +15,7 @@ fun FavouritesComposableContent(
     uiState: Set<SearchResult>,
     isMovieFavourited: (SearchResult) -> Boolean = { false },
     onToggleMovieFavorited: suspend (SearchResult) -> Boolean = { false },
+    onItemTapped: (ItemDetailDestination.Details) -> Unit = {},
 ) {
     MovieItemListComposable(
         modifier = modifier,
@@ -24,5 +26,6 @@ fun FavouritesComposableContent(
         ),
         isMovieFavourited = isMovieFavourited,
         onToggleMovieFavorited = onToggleMovieFavorited,
+        onItemTapped = onItemTapped,
     )
 }

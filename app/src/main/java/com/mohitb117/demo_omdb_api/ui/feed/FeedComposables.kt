@@ -5,7 +5,7 @@ package com.mohitb117.demo_omdb_api.ui.feed
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.gestures.TargetedFlingBehavior
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -16,16 +16,20 @@ import androidx.compose.foundation.pager.VerticalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -36,6 +40,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.mohitb117.demo_omdb_api.R
+import com.mohitb117.demo_omdb_api.activities.ItemDetailDestination
 import com.mohitb117.demo_omdb_api.activities.ui.theme.DEMO_OMDB_APITheme
 import com.mohitb117.demo_omdb_api.activities.ui.theme.Purple40
 import com.mohitb117.demo_omdb_api.datamodels.SearchResult
@@ -48,6 +53,7 @@ fun FeedComposableContent(
     uiState: Set<SearchResult>,
     isMovieFavourited: (SearchResult) -> Boolean = { false },
     onToggleMovieFavorited: suspend (SearchResult) -> Boolean = { false },
+    onItemTapped: (ItemDetailDestination.Details) -> Unit = {}
 ) {
     FeedListComposable(
         modifier = modifier,
@@ -58,6 +64,7 @@ fun FeedComposableContent(
         ),
         isMovieFavourited = isMovieFavourited,
         onToggleMovieFavorited = onToggleMovieFavorited,
+        onItemTapped = onItemTapped,
     )
 }
 
@@ -68,30 +75,67 @@ fun FeedListComposable(
     searchResults: SearchResultsBody,
     isMovieFavourited: (SearchResult) -> Boolean = { false },
     onToggleMovieFavorited: suspend (SearchResult) -> Boolean = { false },
+    onItemTapped: (ItemDetailDestination.Details) -> Unit = {}
 ) {
     val searchItems = searchResults.Search.orEmpty()
 
     val pagerState = rememberPagerState(pageCount = { searchItems.size })
+    val snackbarHostState = remember { SnackbarHostState() }
 
-    if (searchItems.isEmpty()) {
-        Text(modifier = Modifier.fillMaxWidth(), text = "No results found")
-    } else {
-        VerticalPager(
-            modifier = Modifier.fillMaxSize(),
-            state = pagerState,
-            beyondViewportPageCount = 1,
-            contentPadding = PaddingValues(bottom = 150.dp)
-        ) {
-            val item = searchItems[it]
-            FeedListItem(
-                item = item,
-                isMovieFavourited = isMovieFavourited,
-                onToggleMovieFavorited = onToggleMovieFavorited,
+    val isTop by remember {
+        derivedStateOf {
+            pagerState.currentPage == 0 && searchItems.size > 1
+        }
+    }
+
+    val isEnd by remember {
+        derivedStateOf {
+            pagerState.currentPage == searchItems.size - 1 && searchItems.size > 1
+        }
+    }
+
+    LaunchedEffect(isTop) {
+        if (isTop) {
+            snackbarHostState.showSnackbar("You've reached the top of the list!")
+        }
+    }
+    LaunchedEffect(isEnd) {
+        if (isEnd) {
+            snackbarHostState.showSnackbar("You've reached the end of the list!")
+        }
+    }
+
+    Scaffold(
+        modifier = modifier,
+        snackbarHost = { SnackbarHost(snackbarHostState) }
+    ) { paddingValues ->
+        if (searchItems.isEmpty()) {
+            Text(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(paddingValues),
+                text = "No results found"
             )
+        } else {
+            VerticalPager(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues),
+                state = pagerState,
+                beyondViewportPageCount = 1,
+                contentPadding = PaddingValues(bottom = 150.dp)
+            ) { page ->
+                val item = searchItems[page]
+                FeedListItem(
+                    item = item,
+                    isMovieFavourited = isMovieFavourited,
+                    onToggleMovieFavorited = onToggleMovieFavorited,
+                    onItemTapped= onItemTapped,
+                )
+            }
         }
     }
 }
-
 
 @Composable
 fun FeedListItem(
@@ -99,6 +143,7 @@ fun FeedListItem(
     item: SearchResult,
     isMovieFavourited: (SearchResult) -> Boolean = { false },
     onToggleMovieFavorited: suspend (SearchResult) -> Boolean = { false },
+    onItemTapped: (ItemDetailDestination.Details) -> Unit = {}
 ) {
     val coroutineScope = rememberCoroutineScope()
 
@@ -112,7 +157,7 @@ fun FeedListItem(
             .background(
                 color = Purple40,
                 shape = roundedCornerShape
-            ),
+            ).clickable { onItemTapped(ItemDetailDestination.Details(item.title)) },
     ) {
         var isFavourited by rememberSaveable { mutableStateOf(false) }
 

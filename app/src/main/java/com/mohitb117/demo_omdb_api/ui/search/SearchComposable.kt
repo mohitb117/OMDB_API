@@ -12,6 +12,7 @@ import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import com.mohitb117.demo_omdb_api.activities.ItemDetailDestination
 import com.mohitb117.demo_omdb_api.datamodels.SearchResult
 import com.mohitb117.demo_omdb_api.datamodels.SearchResultsBody
 import com.mohitb117.demo_omdb_api.ui.common.MovieItemListComposable
@@ -25,6 +26,7 @@ fun SearchComposableContent(
     onRefresh: () -> Unit = {},
     isMovieFavourited: (SearchResult) -> Boolean = { false },
     onToggleMovieFavorited: suspend (SearchResult) -> Boolean = { false },
+    onItemTapped: (ItemDetailDestination.Details) -> Unit = {}
 ) {
     val scrollState = rememberScrollState()
 
@@ -41,6 +43,7 @@ fun SearchComposableContent(
                     searchResults = searchUiState.value,
                     isMovieFavourited = isMovieFavourited,
                     onToggleMovieFavorited = onToggleMovieFavorited,
+                    onItemTapped = onItemTapped,
                 )
             }
 

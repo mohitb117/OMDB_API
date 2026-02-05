@@ -24,7 +24,6 @@ import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffo
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -35,6 +34,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.compose.rememberNavController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.toRoute
 import com.mohitb117.demo_omdb_api.activities.ui.theme.DEMO_OMDB_APITheme
 import com.mohitb117.demo_omdb_api.activities.ui.theme.Purple80
 import com.mohitb117.demo_omdb_api.datamodels.SearchResult
@@ -99,7 +102,169 @@ class LaunchingActivity : ComponentActivity() {
         onToggleMovieFavorited: suspend (SearchResult) -> Boolean = { false },
     ) {
         var currentDestination by rememberSaveable { mutableStateOf(AppDestinations.HOME) }
+        val navController = rememberNavController()
+        val onItemTapped: (ItemDetailDestination.Details) -> Unit = { navController.navigate(it) }
+        val onDestinationChanged: (AppDestinations) -> Unit = { currentDestination = it }
 
+        NavHost(navController, startDestination = ItemDetailDestination.Home) {
+            composable<ItemDetailDestination.Home> {
+                HomeComposable(
+                    currentDestination = currentDestination,
+                    searchUiState = searchUiState,
+                    searchQuery = searchQuery,
+                    onSearchQueryChanged = onSearchQueryChanged,
+                    isRefreshing = isRefreshing,
+                    onRefresh = onRefresh,
+                    isMovieFavourited = isMovieFavourited,
+                    onToggleMovieFavorited = onToggleMovieFavorited,
+                    onItemTapped = onItemTapped,
+                    favouritesUiState = favouritesUiState,
+                    onDestinationChanged = onDestinationChanged,
+                )
+            }
+
+            composable<ItemDetailDestination.Details> { backStackEntry ->
+                val movie: ItemDetailDestination.Details = backStackEntry.toRoute()
+
+                val windowInset = WindowInsets.statusBars
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .windowInsetsPadding(windowInset),
+                ) {
+                    Text("You tapped on ${movie.name}")
+                }
+            }
+        }
+    }
+
+    @Composable
+    fun SearchMovieInfoLayout(
+        modifier: Modifier = Modifier,
+        searchQuery: String = "",
+        searchUiState: Result<SearchResultsBody>,
+        isRefreshing: Boolean = false,
+        onRefresh: () -> Unit = {},
+        isMovieFavourited: (SearchResult) -> Boolean = { false },
+        onToggleMovieFavorited: suspend (SearchResult) -> Boolean = { false },
+        onItemTapped: (ItemDetailDestination.Details) -> Unit = {}
+    ) {
+        Column(
+            modifier = modifier.fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+
+            if (searchQuery.isNotEmpty()) {
+                val effectiveUiState = when {
+                    searchUiState is Result.Failure && searchUiState.lastCachedData != null -> {
+                        Result.Success(searchUiState.lastCachedData, searchQuery)
+                    }
+
+                    else -> searchUiState
+                }
+
+                SearchComposableContent(
+                    modifier = Modifier,
+                    searchUiState = effectiveUiState,
+                    onRefresh = onRefresh,
+                    isRefreshing = isRefreshing,
+                    onToggleMovieFavorited = onToggleMovieFavorited,
+                    isMovieFavourited = isMovieFavourited,
+                    onItemTapped = onItemTapped,
+                )
+
+            } else {
+                Text("Nothing to search right now!")
+            }
+        }
+    }
+
+    @Composable
+    fun FeedComposableLayout(
+        uiState: Set<SearchResult>,
+        modifier: Modifier = Modifier,
+        isMovieFavourited: (SearchResult) -> Boolean = { false },
+        onToggleMovieFavorited: suspend (SearchResult) -> Boolean = { false },
+        onItemTapped: (ItemDetailDestination.Details) -> Unit = {}
+    ) {
+        Column(
+            modifier = modifier.fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+
+            FeedComposableContent(
+                modifier = Modifier,
+                uiState = uiState,
+                onToggleMovieFavorited = onToggleMovieFavorited,
+                isMovieFavourited = isMovieFavourited,
+                onItemTapped = onItemTapped,
+            )
+        }
+    }
+
+    @Composable
+    fun FavouritesComposableLayout(
+        uiState: Set<SearchResult>,
+        modifier: Modifier = Modifier,
+        isMovieFavourited: (SearchResult) -> Boolean = { false },
+        onToggleMovieFavorited: suspend (SearchResult) -> Boolean = { false },
+        onItemTapped: (ItemDetailDestination.Details) -> Unit = {}
+    ) {
+        Column(
+            modifier = modifier.fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+
+            FavouritesComposableContent(
+                modifier = Modifier,
+                uiState = uiState,
+                onToggleMovieFavorited = onToggleMovieFavorited,
+                isMovieFavourited = isMovieFavourited,
+                onItemTapped = onItemTapped,
+            )
+        }
+    }
+
+    @Preview(showBackground = true)
+    @Composable
+    fun SearchMovieInfoLayoutPreview() {
+        DEMO_OMDB_APITheme {
+            SearchMovieInfoLayout(
+                searchUiState = Result.Loading("")
+            )
+        }
+    }
+
+    @Preview(showBackground = true)
+    @Composable
+    fun LaunchComposablePreview() {
+        DEMO_OMDB_APITheme {
+            LaunchComposableContent(
+                searchUiState = Result.Loading(""),
+                favouritesUiState = emptySet(),
+                searchQuery = "",
+                onSearchQueryChanged = {}
+            )
+        }
+    }
+
+    @Composable
+    private fun HomeComposable(
+        currentDestination: AppDestinations,
+        searchUiState: Result<SearchResultsBody>,
+        searchQuery: String,
+        onSearchQueryChanged: (String) -> Unit,
+        isRefreshing: Boolean,
+        onRefresh: () -> Unit,
+        isMovieFavourited: (SearchResult) -> Boolean,
+        onToggleMovieFavorited: suspend (SearchResult) -> Boolean,
+        onItemTapped: (ItemDetailDestination.Details) -> Unit,
+        favouritesUiState: Set<SearchResult>,
+        onDestinationChanged: (AppDestinations) -> Unit
+    ) {
         NavigationSuiteScaffold(
             navigationSuiteItems = {
                 AppDestinations.entries.forEach {
@@ -110,10 +275,10 @@ class LaunchingActivity : ComponentActivity() {
                         modifier = Modifier,
                         label = { Text(stringResource(it.label)) },
                         selected = it == currentDestination,
-                        onClick = { currentDestination = it },
+                        onClick = { onDestinationChanged(it) },
                     )
                 }
-            }) {
+            }) { 
             val searchResultError = (searchUiState as? Result.Failure)?.error
 
             Scaffold(
@@ -124,7 +289,9 @@ class LaunchingActivity : ComponentActivity() {
                             .fillMaxWidth()
                             .windowInsetsPadding(WindowInsets.statusBars)
                             .padding(horizontal = 16.dp, vertical = 8.dp),
-                        text = searchResultError?.localizedMessage ?: stringResource(currentDestination.label),
+                        text = searchResultError?.localizedMessage ?: stringResource(
+                            currentDestination.label
+                        ),
                         color = if (searchResultError != null) Color.Red else Color.Unspecified,
                     )
                 },
@@ -150,6 +317,7 @@ class LaunchingActivity : ComponentActivity() {
                             onRefresh = onRefresh,
                             isMovieFavourited = isMovieFavourited,
                             onToggleMovieFavorited = onToggleMovieFavorited,
+                            onItemTapped = onItemTapped,
                         )
                     }
 
@@ -159,6 +327,7 @@ class LaunchingActivity : ComponentActivity() {
                             uiState = favouritesUiState,
                             isMovieFavourited = isMovieFavourited,
                             onToggleMovieFavorited = onToggleMovieFavorited,
+                            onItemTapped = onItemTapped,
                         )
                     }
 
@@ -168,117 +337,11 @@ class LaunchingActivity : ComponentActivity() {
                             uiState = favouritesUiState,
                             isMovieFavourited = isMovieFavourited,
                             onToggleMovieFavorited = onToggleMovieFavorited,
+                            onItemTapped = onItemTapped,
                         )
                     }
                 }
             }
-        }
-    }
-
-    @Composable
-    fun SearchMovieInfoLayout(
-        modifier: Modifier = Modifier,
-        searchQuery: String = "",
-        searchUiState: Result<SearchResultsBody>,
-        isRefreshing: Boolean = false,
-        onRefresh: () -> Unit = {},
-        isMovieFavourited: (SearchResult) -> Boolean = { false },
-        onToggleMovieFavorited: suspend (SearchResult) -> Boolean = { false },
-    ) {
-        Column(
-            modifier = modifier.fillMaxSize(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
-
-            if (searchQuery.isNotEmpty()) {
-                val effectiveUiState = when {
-                    searchUiState is Result.Failure && searchUiState.lastCachedData != null -> {
-                        Result.Success(searchUiState.lastCachedData, searchQuery)
-                    }
-
-                    else -> searchUiState
-                }
-
-                SearchComposableContent(
-                    modifier = Modifier,
-                    searchUiState = effectiveUiState,
-                    onRefresh = onRefresh,
-                    isRefreshing = isRefreshing,
-                    onToggleMovieFavorited = onToggleMovieFavorited,
-                    isMovieFavourited = isMovieFavourited,
-                )
-
-            } else {
-                Text("Nothing to search right now!")
-            }
-        }
-    }
-
-    @Composable
-    fun FeedComposableLayout(
-        uiState: Set<SearchResult>,
-        modifier: Modifier = Modifier,
-        isMovieFavourited: (SearchResult) -> Boolean = { false },
-        onToggleMovieFavorited: suspend (SearchResult) -> Boolean = { false },
-    ) {
-        Column(
-            modifier = modifier.fillMaxSize(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
-
-            FeedComposableContent(
-                modifier = Modifier,
-                uiState = uiState,
-                onToggleMovieFavorited = onToggleMovieFavorited,
-                isMovieFavourited = isMovieFavourited,
-            )
-        }
-    }
-
-    @Composable
-    fun FavouritesComposableLayout(
-        uiState: Set<SearchResult>,
-        modifier: Modifier = Modifier,
-        isMovieFavourited: (SearchResult) -> Boolean = { false },
-        onToggleMovieFavorited: suspend (SearchResult) -> Boolean = { false },
-    ) {
-        Column(
-            modifier = modifier.fillMaxSize(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
-
-            FavouritesComposableContent(
-                modifier = Modifier,
-                uiState = uiState,
-                onToggleMovieFavorited = onToggleMovieFavorited,
-                isMovieFavourited = isMovieFavourited,
-            )
-        }
-    }
-
-    @Preview(showBackground = true)
-    @Composable
-    fun SearchMovieInfoLayoutPreview() {
-        DEMO_OMDB_APITheme {
-            SearchMovieInfoLayout(
-                searchUiState = Result.Loading("")
-            )
-        }
-    }
-
-    @Preview(showBackground = true)
-    @Composable
-    fun LaunchComposablePreview() {
-        DEMO_OMDB_APITheme {
-            LaunchComposableContent(
-                searchUiState = Result.Loading(""),
-                favouritesUiState = emptySet(),
-                searchQuery = "",
-                onSearchQueryChanged = {}
-            )
         }
     }
 }
