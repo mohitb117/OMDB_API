@@ -1,0 +1,24 @@
+Architecture overview (ASCII)
+
+- Android UI (Jetpack Compose)
+  - LaunchingActivity
+  - Composables (home/search, details, favorites)
+- ViewModels
+  - SearchViewModel: orchestrates search results, loading/error state, and favorites
+  - FavouritesViewModel: exposes current favorites
+- Domain / Data layer
+  - MovieRepository: central data facade; coordinates remote API and local DB
+  - OMDBApi (Retrofit): remote API surface
+  - MovieResultsDb (Room): local database
+  - FavouritesDao: DAO for favorites
+- Data models
+  - SearchResult (Room entity)
+  - SearchResultsBody, DetailsResultsBody
+  - DetailsResultsBody.toMovieSearchResult() for mapping to a search item
+- Dependency Injection
+  - App entry: OmdbApiApp annotated with @HiltAndroidApp
+  - Modules: NetworkingModule, DbModule, RepositoryModule, CommonModule, FragmentModule
+- Data flow
+  - UI -> ViewModels -> Repository
+  - Repository -> OMDBApi or Room (via DAO)
+  - Results flow back to UI; favorites state synced via DAO
