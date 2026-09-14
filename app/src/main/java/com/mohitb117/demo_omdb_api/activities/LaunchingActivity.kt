@@ -74,7 +74,7 @@ class LaunchingActivity : ComponentActivity() {
         val searchUiState by searchViewModel.searchResultsViewState.collectAsStateWithLifecycle()
         val favouritesUiState by favouritesViewModel.favouritedIdsFlow.collectAsStateWithLifecycle()
         val searchQuery by searchViewModel.searchQuery.collectAsStateWithLifecycle()
-        val isRefreshing by searchViewModel.isRefreshing.collectAsStateWithLifecycle()
+        val isRefreshing by searchViewModel.isLoading.collectAsStateWithLifecycle(initialValue = false)
 
         LaunchComposableContent(
             modifier = modifier,

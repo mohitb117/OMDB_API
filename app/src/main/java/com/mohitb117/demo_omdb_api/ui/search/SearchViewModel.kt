@@ -5,6 +5,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asFlow
+import androidx.lifecycle.map
 import androidx.lifecycle.viewModelScope
 import com.mohitb117.demo_omdb_api.datamodels.SearchResult
 import com.mohitb117.demo_omdb_api.datamodels.SearchResultsBody
@@ -55,12 +56,16 @@ class SearchViewModel @Inject constructor(
             savedStateHandle[KEY_LAST_RESULTS] = value
         }
 
-    val searchQuery = savedStateHandle.getStateFlow(KEY_SEARCH_QUERY, "")
+    val searchQuery = savedStateHandle.getStateFlow(key = KEY_SEARCH_QUERY, initialValue = "")
 
     private val _viewStateLiveData: MutableLiveData<Result<SearchResultsBody>> =
         MutableLiveData(
-            lastCachedData?.let { Result.Success(it, searchQuery.value) } ?: Result.Loading("")
+            lastCachedData
+                ?.let { Result.Success(value = it, searchTerm = searchQuery.value) }
+                ?: Result.Loading("")
         )
+
+    val isLoading = _viewStateLiveData.map { it is Result.Loading }.asFlow()
 
     val searchResultsViewState = _viewStateLiveData.asFlow().stateIn(
         scope = viewModelScope,
@@ -71,8 +76,6 @@ class SearchViewModel @Inject constructor(
     private val _favouritedIds = MutableStateFlow<Set<SearchResult>>(emptySet())
     val favouritedIds = _favouritedIds.asStateFlow()
 
-    private val _isRefreshing = MutableStateFlow(false)
-    val isRefreshing = _isRefreshing.asStateFlow()
 
     init {
         observeSearchQuery()
@@ -105,7 +108,8 @@ class SearchViewModel @Inject constructor(
         searchTerm: String,
         isForceRefresh: Boolean = false,
     ) {
-        if (!isForceRefresh && (_viewStateLiveData.value is Result.Loading && (_viewStateLiveData.value as Result.Loading).searchTerm == searchTerm)) {
+        val currentState = _viewStateLiveData.value
+        if (!isForceRefresh && (currentState is Result.Loading && currentState.searchTerm == searchTerm)) {
             return
         }
 
@@ -155,12 +159,11 @@ class SearchViewModel @Inject constructor(
      */
     fun refresh() {
         viewModelScope.launch {
-            _isRefreshing.value = true
             val term = searchQuery.value
+            _viewStateLiveData.value = Result.Loading(term)
             if (term.isNotBlank()) {
                 performSearchInternal(term)
             }
-            _isRefreshing.value = false
         }
     }
 }
